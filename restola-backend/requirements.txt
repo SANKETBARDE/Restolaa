@@ -1,0 +1,50 @@
+# Django core
+Django==6.0.5
+asgiref==3.11.1
+sqlparse==0.5.5
+
+# REST API
+djangorestframework==3.17.1
+django-cors-headers==4.9.0
+
+# Database
+dj-database-url==3.1.2
+psycopg2-binary==2.9.12
+
+# Supabase SDK (pinned to a version that doesn't require pyiceberg)
+supabase==2.4.6
+gotrue==1.3.1
+postgrest==0.16.11
+realtime==1.0.6
+storage3==0.6.1
+supafunc==0.3.3
+
+# HTTP
+httpx==0.24.1
+httpcore==0.17.3
+h11==0.14.0
+h2==4.3.0
+hpack==4.1.0
+hyperframe==6.1.0
+
+# Auth / JWT
+PyJWT==2.12.1
+
+# Utilities
+python-decouple==3.8
+pydantic==2.13.4
+pydantic_core==2.46.4
+annotated-types==0.7.0
+typing_extensions==4.15.0
+typing-inspection==0.4.2
+anyio==4.13.0
+sniffio==1.3.1
+idna==3.13
+certifi==2026.4.22
+packaging==26.2
+deprecation==2.1.0
+python-dateutil==2.9.0.post0
+six==1.17.0
+StrEnum==0.4.15
+tzdata==2026.2
+websockets==12.0

@@ -1,0 +1,97 @@
+/* Restola Restaurant Theme - Tailwind CSS v4 */
+@import "tailwindcss";
+
+:root {
+  --cream: #FFF8E7;
+  --dark: #1E1E1E;
+  --gold: #D4A017;
+  --red-accent: #B22222;
+  --text: #333333;
+  --white: #FFFFFF;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--cream);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom utility classes */
+.bg-cream { background-color: var(--cream); }
+.bg-dark { background-color: var(--dark); }
+.bg-gold { background-color: var(--gold); }
+.bg-red-accent { background-color: var(--red-accent); }
+
+.text-gold { color: var(--gold); }
+.text-cream { color: var(--cream); }
+.text-red-accent { color: var(--red-accent); }
+.text-dark { color: var(--dark); }
+
+.border-gold { border-color: var(--gold); }
+.border-red-accent { border-color: var(--red-accent); }
+
+.hover\:bg-gold-dark:hover {
+  background-color: #B8860B;
+}
+
+/* Form inputs - base styling, padding controlled by Tailwind classes */
+input, textarea, select {
+  @apply py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D4A017] focus:border-transparent;
+}
+
+/* Default padding for inputs without explicit padding classes */
+input:not([class*="pl-"]):not([class*="px-"]),
+textarea:not([class*="pl-"]):not([class*="px-"]),
+select:not([class*="pl-"]):not([class*="px-"]) {
+  @apply px-4;
+}
+
+/* Buttons */
+.btn-primary {
+  @apply px-6 py-3 bg-[#D4A017] text-white font-semibold rounded-lg hover:bg-[#B8860B] transition-all duration-300;
+}
+
+.btn-dark {
+  @apply px-6 py-3 bg-[#1E1E1E] text-white font-semibold rounded-lg hover:bg-[#333333] transition-all duration-300;
+}
+
+.btn-outline {
+  @apply px-6 py-3 border-2 border-[#D4A017] text-[#D4A017] font-semibold rounded-lg hover:bg-[#D4A017] hover:text-white transition-all duration-300;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300;
+}
+
+/* Container */
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8860B;
+}
