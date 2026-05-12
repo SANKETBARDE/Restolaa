@@ -194,7 +194,7 @@ const ManageOrders = () => {
                       <tbody>
                         {orderItems[order.id].map((item) => (
                           <tr key={item.id} className="border-t">
-                            <td className="py-2">Menu Item #{item.menu_item}</td>
+                            <td className="py-2">{item.food_name || `Menu Item #${item.menu_item}`}</td>
                             <td className="py-2">{item.quantity}</td>
                             <td className="py-2">${item.price}</td>
                             <td className="py-2 font-semibold">

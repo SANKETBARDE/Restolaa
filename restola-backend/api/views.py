@@ -29,12 +29,19 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
-    queryset = OrderItem.objects.all().order_by('-created_at')
     serializer_class = OrderItemSerializer
+
+    def get_queryset(self):
+        queryset = OrderItem.objects.all().order_by('-created_at')
+        order_id = self.request.query_params.get('order')
+        if order_id:
+            queryset = queryset.filter(order__id=order_id)
+        return queryset
 
 
 class TableReservationViewSet(viewsets.ModelViewSet):
     queryset = TableReservation.objects.all().order_by('-created_at')
+    serializer_class = TableReservationSerializer
     serializer_class = TableReservationSerializer
 
 

@@ -149,7 +149,7 @@ const MyOrders = () => {
                     {orderItems[order.id].map((item) => (
                       <div key={item.id} className="flex justify-between items-center py-2">
                         <div>
-                          <p className="font-medium">Menu Item #{item.menu_item}</p>
+                          <p className="font-medium">{item.food_name || `Menu Item #${item.menu_item}`}</p>
                           <p className="text-sm text-gray-500">Qty: {item.quantity} × ${item.price}</p>
                         </div>
                         <span className="font-semibold">

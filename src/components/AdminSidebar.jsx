@@ -12,7 +12,8 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import API from "../api/axiosConfig";
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -30,6 +31,31 @@ const AdminSidebar = () => {
     { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
+  const [logoUrl, setLogoUrl] = useState("");
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const response = await API.get("restaurant-details/");
+        const data = response.data.results?.[0] || response.data[0];
+        setLogoUrl(data?.logo_url || "");
+      } catch (error) {
+        console.error("Error loading admin logo:", error);
+      }
+    };
+
+    const handleLogoUpdate = () => {
+      fetchLogo();
+    };
+
+    fetchLogo();
+    window.addEventListener("restaurantLogoUpdated", handleLogoUpdate);
+
+    return () => {
+      window.removeEventListener("restaurantLogoUpdated", handleLogoUpdate);
+    };
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -39,9 +65,20 @@ const AdminSidebar = () => {
     <>
       {/* Logo */}
       <div className="p-6 border-b border-gray-700">
-        <Link to="/admin/dashboard" className="flex items-center space-x-2">
-          <span className="text-2xl font-bold text-[#D4A017]">Restola</span>
-          <span className="text-sm text-gray-400">Admin</span>
+        <Link to="/admin/dashboard" className="flex items-center">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Admin logo"
+              className="h-12 w-auto object-contain"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <span className="text-2xl font-bold text-[#D4A017]">Restola</span>
+          )}
         </Link>
       </div>
 

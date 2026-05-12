@@ -14,14 +14,14 @@ const Footer = () => {
               Where every meal becomes a memorable occasion.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="p-2 bg-gray-800 rounded-full hover:bg-[#D4A017] transition-colors" title="Facebook">
-                <span className="text-xs font-bold">f</span>
+              <a href="https://www.facebook.com/restola" target="_blank" rel="noreferrer" className="p-2 bg-gray-800 rounded-full hover:bg-[#D4A017] transition-colors" title="Facebook">
+                <i className="fa-brands fa-facebook-f text-base"></i>
               </a>
-              <a href="#" className="p-2 bg-gray-800 rounded-full hover:bg-[#D4A017] transition-colors" title="Instagram">
-                <Share2 className="w-5 h-5" />
+              <a href="https://www.instagram.com/restola" target="_blank" rel="noreferrer" className="p-2 bg-gray-800 rounded-full hover:bg-[#D4A017] transition-colors" title="Instagram">
+                <i className="fa-brands fa-instagram text-base"></i>
               </a>
-              <a href="#" className="p-2 bg-gray-800 rounded-full hover:bg-[#D4A017] transition-colors" title="Twitter">
-                <span className="text-xs font-bold">X</span>
+              <a href="https://www.youtube.com/restola" target="_blank" rel="noreferrer" className="p-2 bg-gray-800 rounded-full hover:bg-[#D4A017] transition-colors" title="YouTube">
+                <i className="fa-brands fa-youtube text-base"></i>
               </a>
             </div>
           </div>

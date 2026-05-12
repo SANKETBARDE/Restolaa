@@ -17,6 +17,8 @@ const RestaurantSettings = () => {
     closing_time: "23:00",
     logo_url: "",
   });
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState("");
 
   useEffect(() => {
     fetchSettings();
@@ -37,6 +39,7 @@ const RestaurantSettings = () => {
           closing_time: data.closing_time || "23:00",
           logo_url: data.logo_url || "",
         });
+        setLogoPreview(data.logo_url || "");
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -52,13 +55,37 @@ const RestaurantSettings = () => {
       // Try to get existing ID first
       const checkRes = await API.get("restaurant-details/");
       const existing = checkRes.data.results?.[0] || checkRes.data[0];
-      
+
+      const submitData = logoFile ? new FormData() : { ...settings };
+      if (logoFile) {
+        submitData.append("logo", logoFile);
+        submitData.append("name", settings.name);
+        submitData.append("description", settings.description);
+        submitData.append("address", settings.address);
+        submitData.append("phone", settings.phone);
+        submitData.append("email", settings.email);
+        submitData.append("opening_time", settings.opening_time);
+        submitData.append("closing_time", settings.closing_time);
+        if (settings.logo_url) {
+          submitData.append("logo_url", settings.logo_url);
+        }
+      }
+
       if (existing?.id) {
-        await API.put(`restaurant-details/${existing.id}/`, settings);
+        if (logoFile) {
+          await API.put(`restaurant-details/${existing.id}/`, submitData);
+        } else {
+          await API.put(`restaurant-details/${existing.id}/`, submitData);
+        }
       } else {
-        await API.post("restaurant-details/", settings);
+        if (logoFile) {
+          await API.post("restaurant-details/", submitData);
+        } else {
+          await API.post("restaurant-details/", submitData);
+        }
       }
       toast.success("Settings saved successfully");
+      window.dispatchEvent(new Event("restaurantLogoUpdated"));
     } catch (error) {
       console.error("Error saving settings:", error);
       toast.error("Failed to save settings");
@@ -69,6 +96,14 @@ const RestaurantSettings = () => {
 
   const handleChange = (e) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
   };
 
   if (loading) {
@@ -90,19 +125,18 @@ const RestaurantSettings = () => {
           <div className="mb-8">
             <label className="block text-sm font-medium mb-2">
               <Image className="w-4 h-4 inline mr-1" />
-              Logo URL
+              Upload Logo
             </label>
             <input
-              type="url"
-              name="logo_url"
-              value={settings.logo_url}
-              onChange={handleChange}
+              type="file"
+              name="logo"
+              accept="image/*"
+              onChange={handleLogoChange}
               className="w-full"
-              placeholder="https://example.com/logo.png"
             />
-            {settings.logo_url && (
+            {logoPreview && (
               <img
-                src={settings.logo_url}
+                src={logoPreview}
                 alt="Logo preview"
                 className="mt-4 w-32 h-32 object-contain border rounded-lg"
               />

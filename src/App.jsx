@@ -16,6 +16,8 @@ import BookEvent from "./pages/BookEvent";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyOrders from "./pages/MyOrders";
+import MyReservations from "./pages/MyReservations";
+import MyEvents from "./pages/MyEvents";
 
 // Admin Pages
 import AdminLogin from "./admin/AdminLogin";
@@ -67,6 +69,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MyOrders />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-reservations"
+                element={
+                  <ProtectedRoute>
+                    <MyReservations />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-events"
+                element={
+                  <ProtectedRoute>
+                    <MyEvents />
                   </ProtectedRoute>
                 }
               />

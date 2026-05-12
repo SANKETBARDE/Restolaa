@@ -33,11 +33,17 @@ const Checkout = () => {
     try {
       // Create order
       const orderData = {
-        ...formData,
+        customer_name: formData.customer_name,
+        phone: formData.phone,
+        address: formData.address,
+        payment_method: formData.payment_method,
         total_amount: getCartTotal() * 1.1,
         status: "pending",
         payment_status: "pending",
       };
+      if (formData.notes?.trim()) {
+        orderData.notes = formData.notes.trim();
+      }
       const orderResponse = await API.post("orders/", orderData);
       const orderId = orderResponse.data.id;
 
@@ -46,8 +52,10 @@ const Checkout = () => {
         await API.post("order-items/", {
           order: orderId,
           menu_item: item.id,
+          food_name: item.name,
           quantity: item.quantity,
           price: item.price,
+          total_price: item.price * item.quantity,
         });
       }
 
