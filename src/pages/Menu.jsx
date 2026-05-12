@@ -18,7 +18,9 @@ const Menu = () => {
   const fetchCategories = async () => {
     try {
       const response = await API.get("menu-categories/");
-      setCategories(response.data.results || response.data);
+      const categoriesData = response.data.results || response.data;
+      console.log("Categories fetched:", categoriesData);
+      setCategories(categoriesData);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -27,7 +29,9 @@ const Menu = () => {
   const fetchItems = async () => {
     try {
       const response = await API.get("menu-items/");
-      setItems(response.data.results || response.data);
+      const itemsData = response.data.results || response.data;
+      console.log("Items fetched:", itemsData);
+      setItems(itemsData);
     } catch (error) {
       console.error("Error fetching items:", error);
     } finally {
@@ -36,9 +40,18 @@ const Menu = () => {
   };
 
   const filteredItems = items.filter((item) => {
-    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || String(item.category) === String(selectedCategory);
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Debug logging for first few items
+    if (items.indexOf(item) < 3) {
+      console.log("Filtering item:", item.name, 
+                  "Item category:", item.category, "Type:", typeof item.category,
+                  "Selected:", selectedCategory, "Type:", typeof selectedCategory,
+                  "Matches category:", matchesCategory);
+    }
+    
     return matchesCategory && matchesSearch;
   });
 
@@ -85,9 +98,12 @@ const Menu = () => {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => {
+                console.log("Selected category:", cat.id, "Type:", typeof cat.id);
+                setSelectedCategory(cat.id);
+              }}
               className={`px-4 py-2 rounded-full font-medium transition-all ${
-                selectedCategory === cat.id
+                String(selectedCategory) === String(cat.id)
                   ? "bg-[#D4A017] text-white"
                   : "bg-white border border-gray-300 hover:border-[#D4A017]"
               }`}

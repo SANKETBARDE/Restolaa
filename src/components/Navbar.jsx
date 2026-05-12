@@ -28,7 +28,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-[#1E1E1E] text-white sticky top-0 z-50 shadow-lg">
+    <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#1E1E1E]/80 border-b border-white/10 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -46,7 +46,7 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className="text-gray-300 hover:text-[#D4A017] transition-colors duration-200"
+                className="text-gray-300 hover:text-[#D4A017] hover:drop-shadow-[0_0_8px_rgba(212,160,23,0.8)] transition-all duration-200"
               >
                 {link.name}
               </Link>
@@ -55,10 +55,10 @@ const Navbar = () => {
 
           {/* Right side icons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/cart" className="relative p-2 hover:bg-gray-800 rounded-lg transition-colors">
+            <Link to="/cart" className="relative transition-all text-[#D4A017] hover:drop-shadow-[0_0_12px_rgba(212,160,23,1)]">
               <ShoppingCart className="w-5 h-5" />
               {getCartCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#D4A017] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#D4A017] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-[0_0_10px_rgba(212,160,23,0.8)]">
                   {getCartCount()}
                 </span>
               )}
@@ -66,13 +66,13 @@ const Navbar = () => {
 
             {user ? (
               <div className="flex items-center space-x-4">
-                <Link to="/profile" className="flex items-center space-x-2 hover:text-[#D4A017] transition-colors">
+                <Link to="/profile" className="flex items-center space-x-2 text-[#D4A017] hover:text-[#FFD700] hover:drop-shadow-[0_0_8px_rgba(255,215,0,0.8)] transition-all">
                   <User className="w-5 h-5" />
                   <span>{user.full_name || user.first_name || user.username}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                  className="transition-all text-[#D4A017] hover:drop-shadow-[0_0_12px_rgba(212,160,23,1)]"
                 >
                   <LogOut className="w-5 h-5" />
                 </button>
@@ -81,13 +81,13 @@ const Navbar = () => {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-[#D4A017] border border-[#D4A017] rounded-lg hover:bg-[#D4A017] hover:text-white transition-all"
+                  className="px-4 py-2 text-[#D4A017] border border-[#D4A017] rounded-lg hover:bg-[#D4A017] hover:text-white hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] transition-all"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 bg-[#D4A017] text-white rounded-lg hover:bg-[#B8860B] transition-all"
+                  className="px-4 py-2 bg-[#D4A017] text-white rounded-lg hover:bg-[#B8860B] hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] transition-all"
                 >
                   Register
                 </Link>

@@ -10,6 +10,8 @@ const ManageMenu = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -30,13 +32,66 @@ const ManageMenu = () => {
         API.get("menu-items/"),
         API.get("menu-categories/"),
       ]);
-      setItems(itemsRes.data.results || itemsRes.data);
-      setCategories(catsRes.data.results || catsRes.data);
+      const itemsData = itemsRes.data.results || itemsRes.data;
+      let categoriesData = catsRes.data.results || catsRes.data;
+      console.log("ManageMenu - Items:", itemsData);
+      console.log("ManageMenu - Categories:", categoriesData);
+      
+      // If no categories exist, create default ones
+      if (!categoriesData || categoriesData.length === 0) {
+        console.log("No categories found, creating default categories...");
+        await createDefaultCategories();
+        // Refetch categories after creating defaults
+        const catsRes = await API.get("menu-categories/");
+        categoriesData = catsRes.data.results || catsRes.data;
+      }
+      
+      setItems(itemsData);
+      setCategories(categoriesData);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load menu data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createDefaultCategories = async () => {
+    const defaultCategories = [
+      { name: "Appetizers" },
+      { name: "Main Course" },
+      { name: "Desserts" },
+      { name: "Beverages" },
+      { name: "Soups" },
+      { name: "Salads" }
+    ];
+    
+    try {
+      for (const category of defaultCategories) {
+        await API.post("menu-categories/", category);
+      }
+      toast.success("Default categories created successfully");
+    } catch (error) {
+      console.error("Error creating default categories:", error);
+      toast.error("Failed to create default categories");
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) {
+      toast.error("Please enter a category name");
+      return;
+    }
+    
+    try {
+      await API.post("menu-categories/", { name: newCategoryName.trim() });
+      toast.success("Category added successfully");
+      setNewCategoryName("");
+      setShowCategoryModal(false);
+      fetchData(); // Refetch data
+    } catch (error) {
+      console.error("Error adding category:", error);
+      toast.error("Failed to add category");
     }
   };
 
@@ -79,8 +134,17 @@ const ManageMenu = () => {
     }
   };
 
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     setEditingItem(item);
+    // Refetch categories to ensure we have the latest data
+    try {
+      const catsRes = await API.get("menu-categories/");
+      const categoriesData = catsRes.data.results || catsRes.data;
+      console.log("Refetched categories for edit modal:", categoriesData);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error("Error refetching categories:", error);
+    }
     setFormData({
       name: item.name,
       description: item.description,
@@ -105,9 +169,18 @@ const ManageMenu = () => {
     });
   };
 
-  const handleAddNew = () => {
+  const handleAddNew = async () => {
     setEditingItem(null);
     resetForm();
+    // Refetch categories to ensure we have the latest data
+    try {
+      const catsRes = await API.get("menu-categories/");
+      const categoriesData = catsRes.data.results || catsRes.data;
+      console.log("Refetched categories for modal:", categoriesData);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error("Error refetching categories:", error);
+    }
     setShowModal(true);
   };
 
@@ -125,13 +198,22 @@ const ManageMenu = () => {
       <main className="lg:ml-64 p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Manage Menu</h1>
-          <button
-            onClick={handleAddNew}
-            className="btn-primary flex items-center space-x-2"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Item</span>
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="px-4 py-2 border border-[#D4A017] text-[#D4A017] rounded-lg hover:bg-[#D4A017] hover:text-white transition-all flex items-center space-x-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Category</span>
+            </button>
+            <button
+              onClick={handleAddNew}
+              className="btn-primary flex items-center space-x-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Item</span>
+            </button>
+          </div>
         </div>
 
         {/* Items Table */}
@@ -251,13 +333,20 @@ const ManageMenu = () => {
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                       required
-                      className="w-full"
+                      className="w-full px-3 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D4A017] focus:border-transparent"
                     >
                       <option value="">Select category</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
+                      {categories && categories.length > 0 ? (
+                        categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))
+                      ) : (
+                        <option value="" disabled>Loading categories...</option>
+                      )}
                     </select>
+                    {(!categories || categories.length === 0) && (
+                      <p className="text-red-500 text-sm mt-1">No categories available. Please add categories first.</p>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -303,6 +392,50 @@ const ManageMenu = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Category Modal */}
+        {showCategoryModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+              <div className="p-6 border-b flex justify-between items-center">
+                <h2 className="text-xl font-bold">Add Category</h2>
+                <button
+                  onClick={() => setShowCategoryModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Category Name</label>
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Enter category name"
+                    className="w-full px-3 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D4A017] focus:border-transparent"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleAddCategory}
+                    className="flex-1 btn-primary"
+                  >
+                    Add Category
+                  </button>
+                  <button
+                    onClick={() => setShowCategoryModal(false)}
+                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

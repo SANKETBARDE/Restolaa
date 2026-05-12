@@ -24,7 +24,6 @@ import MyReservations from "./pages/MyReservations";
 import MyEvents from "./pages/MyEvents";
 
 // Admin Pages
-import AdminLogin from "./admin/AdminLogin";
 import AdminDashboard from "./admin/AdminDashboard";
 import ManageMenu from "./admin/ManageMenu";
 import ManageOrders from "./admin/ManageOrders";
@@ -119,7 +118,6 @@ function App() {
             </Route>
 
             {/* Admin Routes */}
-            <Route path="/admin/login" element={<AdminLogin />} />
             <Route element={<AdminLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/menu" element={<ManageMenu />} />

@@ -119,16 +119,7 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Admin Login Shortcut */}
-          <div className="mt-8 pt-6 border-t text-center">
-            <Link
-              to="/admin/login"
-              className="text-sm text-gray-500 hover:text-[#D4A017]"
-            >
-              Admin Login →
-            </Link>
-          </div>
-        </div>
+                  </div>
       </div>
     </div>
   );
