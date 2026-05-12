@@ -36,7 +36,7 @@ const Register = () => {
 
     setLoading(true);
     try {
-      await API.post("customers/", {
+      const response = await API.post("customers/", {
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -44,8 +44,14 @@ const Register = () => {
         password: formData.password,
       });
       
-      toast.success("Registration successful! Please login.");
-      navigate("/login");
+      // Check if email verification was sent
+      if (response.data._email_sent) {
+        toast.success(response.data._message || "Registration successful! Please check your email to verify your account.");
+        navigate("/verify-email", { state: { email: formData.email } });
+      } else {
+        toast.success("Registration successful! Please login.");
+        navigate("/login");
+      }
     } catch (error) {
       console.error("Registration error:", error);
       const errorData = error.response?.data;

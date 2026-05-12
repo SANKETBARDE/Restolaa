@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import LoadingPage from "./components/LoadingPage";
 
 // Customer Pages
 import Home from "./pages/Home";
@@ -15,6 +17,7 @@ import ReserveTable from "./pages/ReserveTable";
 import BookEvent from "./pages/BookEvent";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 import MyOrders from "./pages/MyOrders";
 import MyReservations from "./pages/MyReservations";
 import MyEvents from "./pages/MyEvents";
@@ -48,6 +51,21 @@ const AdminLayout = () => (
 );
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for assets
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
   return (
     <AuthProvider>
       <CartProvider>
@@ -64,6 +82,7 @@ function App() {
               <Route path="/book-event" element={<BookEvent />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route
                 path="/my-orders"
                 element={

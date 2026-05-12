@@ -2,42 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { ShoppingCart, User, Menu, X, LogOut } from "lucide-react";
-import { useState, useEffect } from "react";
-import API from "../api/axiosConfig";
+import { useState } from "react";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { getCartCount } = useCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [logoUrl, setLogoUrl] = useState(null);
-  const [logoLoaded, setLogoLoaded] = useState(false);
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const response = await API.get("restaurant-details/");
-        const data = response.data.results?.[0] || response.data[0];
-        setLogoUrl(data?.logo_url || "");
-      } catch (error) {
-        console.error("Error loading restaurant logo:", error);
-        setLogoUrl("");
-      } finally {
-        setLogoLoaded(true);
-      }
-    };
-
-    const handleLogoUpdate = () => {
-      fetchLogo();
-    };
-
-    fetchLogo();
-    window.addEventListener("restaurantLogoUpdated", handleLogoUpdate);
-
-    return () => {
-      window.removeEventListener("restaurantLogoUpdated", handleLogoUpdate);
-    };
-  }, []);
 
   const handleLogout = () => {
     logout();
@@ -62,21 +33,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt="Restola logo"
-                className="h-10 w-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            ) : logoLoaded ? (
-              <span className="text-2xl font-bold text-[#D4A017]">Restola</span>
-            ) : (
-              <div className="h-10 w-24" />
-            )}
+            <img
+              src="/Restolacut.png"
+              alt="Restola logo"
+              className="h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation */}

@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import API from "../api/axiosConfig";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -10,25 +9,10 @@ const AdminLogin = () => {
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [logoUrl, setLogoUrl] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const response = await API.get("restaurant-details/");
-        const data = response.data.results?.[0] || response.data[0];
-        setLogoUrl(data?.logo_url || "");
-      } catch (error) {
-        console.error("Error loading admin login logo:", error);
-      }
-    };
-
-    fetchLogo();
-  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -74,19 +58,11 @@ const AdminLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#1E1E1E]">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt="Restola logo"
-                className="mx-auto h-16 w-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            ) : (
-              <h1 className="text-3xl font-bold text-[#1E1E1E] mb-2">Restola</h1>
-            )}
+          <img
+            src="/Restolacut.png"
+            alt="Restola logo"
+            className="mx-auto h-16 w-auto object-contain"
+          />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

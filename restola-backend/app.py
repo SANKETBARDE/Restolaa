@@ -17,10 +17,10 @@ JWT_EXPIRATION_DAYS = 1
 # Local auth storage (for when Supabase Auth is rate-limited)
 # Format: {email: {"password_hash": "...", "user_id": "..."}}
 local_auth_store = {
-    "sanketbarde7322@gmail.com": {
-        "password_hash": bcrypt.hashpw("S@mbhavbkl03".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
-        "user_id": "temp-user-id"
-    },
+    # "sanketbarde7322@gmail.com": {
+    #     "password_hash": bcrypt.hashpw("S@mbhavbkl03".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+    #     "user_id": "temp-user-id"
+    # },
     "admin@restola.com": {
         "password_hash": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
         "user_id": "admin-user-id"
@@ -190,6 +190,70 @@ def refresh_token():
     except Exception as e:
         return jsonify({"detail": str(e)}), 500
 
+# ==================== EMAIL VERIFICATION ====================
+@app.route('/api/verify-email/', methods=['POST'])
+def verify_email():
+    """Verify email using the token from the verification email."""
+    try:
+        data = request.json
+        token = data.get('token')
+        email = data.get('email')
+        
+        if not token or not email:
+            return jsonify({"detail": "Token and email are required"}), 400
+        
+        supabase = get_supabase_client()
+        
+        # Verify the email using Supabase
+        try:
+            supabase.auth.verify_oauth({
+                token: token,
+                type: 'email'
+            })
+            return jsonify({"message": "Email verified successfully"}), 200
+        except Exception as verify_error:
+            # Try alternative verification method
+            try:
+                supabase.auth.update_user({
+                    email: email,
+                    email_confirm: True
+                })
+                return jsonify({"message": "Email verified successfully"}), 200
+            except Exception as update_error:
+                print(f"Email verification error: {str(update_error)}")
+                return jsonify({"detail": "Invalid or expired verification token"}), 400
+                
+    except Exception as e:
+        return jsonify({"detail": str(e)}), 500
+
+@app.route('/api/resend-verification/', methods=['POST'])
+def resend_verification():
+    """Resend verification email."""
+    try:
+        data = request.json
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({"detail": "Email is required"}), 400
+        
+        supabase = get_supabase_client()
+        
+        try:
+            supabase.auth.resend({
+                type: 'signup',
+                email: email,
+                options: {
+                    "emailRedirectTo": f"{request.host_url}verify-email"
+                }
+            })
+            return jsonify({"message": "Verification email sent successfully"}), 200
+        except Exception as resend_error:
+            print(f"Resend verification error: {str(resend_error)}")
+            return jsonify({"detail": "Failed to resend verification email"}), 400
+                
+    except Exception as e:
+        return jsonify({"detail": str(e)}), 500
+
 # ==================== PROFILES ====================
 @app.route('/api/profiles/', methods=['GET'])
 def get_profiles():
@@ -203,7 +267,7 @@ def get_profiles():
 
 @app.route('/api/profiles/', methods=['POST'])
 def create_profile():
-    """Create a new profile. If password is provided, also creates Supabase Auth user."""
+    """Create a new profile. If password is provided, also creates Supabase Auth user with email verification."""
     try:
         supabase = get_supabase_client()
         data = request.json
@@ -211,15 +275,20 @@ def create_profile():
         
         # Create Supabase Auth user if password is provided
         auth_created = False
+        email_confirmation_sent = False
         if password:
             try:
                 auth_response = supabase.auth.sign_up({
                     "email": data['email'],
-                    "password": password
+                    "password": password,
+                    "options": {
+                        "emailRedirectTo": f"{request.host_url}verify-email"
+                    }
                 })
                 # Use the auth user ID for the profile
                 data['id'] = auth_response.user.id
                 auth_created = True
+                email_confirmation_sent = True
                 print(f"Supabase Auth user created: {data['id']}")
             except Exception as auth_error:
                 # If auth fails (rate limit, etc), generate our own UUID and store locally
@@ -243,8 +312,11 @@ def create_profile():
         response = supabase.table('profiles').insert(data).execute()
         result = response.data[0] if response.data else {}
         
-        # If auth wasn't created, we should still allow registration but note it
-        if password and not auth_created:
+        # Add information about email verification
+        if password and auth_created:
+            result['_message'] = 'Registration successful! Please check your email to verify your account.'
+            result['_email_sent'] = email_confirmation_sent
+        elif password and not auth_created:
             result['_note'] = 'Auth service temporarily unavailable. Please contact support.'
         
         return jsonify(result), 201
@@ -843,55 +915,51 @@ def delete_event_booking(booking_id):
 def get_payments():
     try:
         supabase = get_supabase_client()
-        response = supabase.table('payments').select('*').order('created_at', desc=True).execute()
+        # Query orders table for payment information
+        response = supabase.table('orders').select('*').order('created_at', desc=True).execute()
         data = response.data or []
-        # Map database fields to frontend fields
+        # Transform order data to payment format for frontend
+        payments = []
         for item in data:
-            if 'payment_status' in item:
-                item['status'] = item['payment_status']
-            if 'order_id' in item:
-                item['order'] = item['order_id']
-        return jsonify({"results": data, "count": len(data)})
+            payment = {
+                'id': item['id'],
+                'order': item['id'],
+                'amount': item.get('total_amount', 0),
+                'payment_method': item.get('payment_method', 'cod'),
+                'status': item.get('payment_status', 'pending'),
+                'created_at': item.get('created_at'),
+                'customer_name': item.get('customer_name', '')
+            }
+            payments.append(payment)
+        return jsonify({"results": payments, "count": len(payments)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/payments/', methods=['POST'])
 def create_payment():
-    try:
-        supabase = get_supabase_client()
-        data = request.json
-        # Map frontend fields to database fields
-        if 'status' in data:
-            data['payment_status'] = data.pop('status')
-        if 'order' in data:
-            data['order_id'] = data.pop('order')
-        data['id'] = str(uuid.uuid4())
-        data['created_at'] = datetime.now().isoformat()
-        response = supabase.table('payments').insert(data).execute()
-        result = response.data[0] if response.data else {}
-        # Map back to frontend fields
-        if 'payment_status' in result:
-            result['status'] = result['payment_status']
-        if 'order_id' in result:
-            result['order'] = result['order_id']
-        return jsonify(result), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # Payments are created as part of orders, not separately
+    return jsonify({"error": "Payments are created with orders. Use POST /api/orders/ instead"}), 400
 
 @app.route('/api/payments/<payment_id>/', methods=['GET'])
 def get_payment(payment_id):
     try:
         supabase = get_supabase_client()
-        response = supabase.table('payments').select('*').eq('id', payment_id).execute()
+        # Query orders table for payment information
+        response = supabase.table('orders').select('*').eq('id', payment_id).execute()
         data = response.data or []
         if data:
-            result = data[0]
-            # Map database fields to frontend fields
-            if 'payment_status' in result:
-                result['status'] = result['payment_status']
-            if 'order_id' in result:
-                result['order'] = result['order_id']
-            return jsonify(result)
+            item = data[0]
+            # Transform order data to payment format
+            payment = {
+                'id': item['id'],
+                'order': item['id'],
+                'amount': item.get('total_amount', 0),
+                'payment_method': item.get('payment_method', 'cod'),
+                'status': item.get('payment_status', 'pending'),
+                'created_at': item.get('created_at'),
+                'customer_name': item.get('customer_name', '')
+            }
+            return jsonify(payment)
         return jsonify({"error": "Payment not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -902,28 +970,37 @@ def update_payment(payment_id):
         supabase = get_supabase_client()
         data = request.json
         # Map frontend fields to database fields
+        update_data = {}
         if 'status' in data:
-            data['payment_status'] = data.pop('status')
-        if 'order' in data:
-            data['order_id'] = data.pop('order')
-        response = supabase.table('payments').update(data).eq('id', payment_id).execute()
+            update_data['payment_status'] = data['status']
+        if 'payment_method' in data:
+            update_data['payment_method'] = data['payment_method']
+        update_data['updated_at'] = datetime.now().isoformat()
+        response = supabase.table('orders').update(update_data).eq('id', payment_id).execute()
         result = response.data or []
         if result:
-            # Map back to frontend fields
-            if 'payment_status' in result[0]:
-                result[0]['status'] = result[0]['payment_status']
-            if 'order_id' in result[0]:
-                result[0]['order'] = result[0]['order_id']
-            return jsonify(result[0])
+            item = result[0]
+            # Transform order data to payment format
+            payment = {
+                'id': item['id'],
+                'order': item['id'],
+                'amount': item.get('total_amount', 0),
+                'payment_method': item.get('payment_method', 'cod'),
+                'status': item.get('payment_status', 'pending'),
+                'created_at': item.get('created_at'),
+                'customer_name': item.get('customer_name', '')
+            }
+            return jsonify(payment)
         return jsonify({"error": "Payment not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/payments/<payment_id>/', methods=['DELETE'])
 def delete_payment(payment_id):
+    # Payments are tied to orders, delete the order instead
     try:
         supabase = get_supabase_client()
-        supabase.table('payments').delete().eq('id', payment_id).execute()
+        supabase.table('orders').delete().eq('id', payment_id).execute()
         return jsonify({"message": "Payment deleted"}), 204
     except Exception as e:
         return jsonify({"error": str(e)}), 500

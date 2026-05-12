@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import API from "../api/axiosConfig";
 import AdminSidebar from "../components/AdminSidebar";
-import { Save, Image, MapPin, Phone, Mail, Clock } from "lucide-react";
+import { Save, MapPin, Phone, Mail, Clock } from "lucide-react";
 import { toast } from "react-toastify";
 
 const RestaurantSettings = () => {
@@ -15,10 +15,7 @@ const RestaurantSettings = () => {
     email: "info@restola.com",
     opening_time: "11:00",
     closing_time: "23:00",
-    logo_url: "",
   });
-  const [logoFile, setLogoFile] = useState(null);
-  const [logoPreview, setLogoPreview] = useState("");
 
   useEffect(() => {
     fetchSettings();
@@ -37,9 +34,7 @@ const RestaurantSettings = () => {
           email: data.email || "",
           opening_time: data.opening_time || "11:00",
           closing_time: data.closing_time || "23:00",
-          logo_url: data.logo_url || "",
         });
-        setLogoPreview(data.logo_url || "");
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -98,14 +93,6 @@ const RestaurantSettings = () => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
 
-  const handleLogoChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setLogoFile(file);
-      setLogoPreview(URL.createObjectURL(file));
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center lg:pl-64">
@@ -121,28 +108,6 @@ const RestaurantSettings = () => {
         <h1 className="text-3xl font-bold mb-8">Restaurant Settings</h1>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md p-8 max-w-3xl">
-          {/* Logo */}
-          <div className="mb-8">
-            <label className="block text-sm font-medium mb-2">
-              <Image className="w-4 h-4 inline mr-1" />
-              Upload Logo
-            </label>
-            <input
-              type="file"
-              name="logo"
-              accept="image/*"
-              onChange={handleLogoChange}
-              className="w-full"
-            />
-            {logoPreview && (
-              <img
-                src={logoPreview}
-                alt="Logo preview"
-                className="mt-4 w-32 h-32 object-contain border rounded-lg"
-              />
-            )}
-          </div>
-
           {/* Restaurant Name */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">Restaurant Name</label>
