@@ -18,6 +18,7 @@ import BookEvent from "./pages/BookEvent";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
+import Profile from "./pages/Profile";
 import MyOrders from "./pages/MyOrders";
 import MyReservations from "./pages/MyReservations";
 import MyEvents from "./pages/MyEvents";
@@ -83,6 +84,14 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/my-orders"
                 element={

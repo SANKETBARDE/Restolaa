@@ -66,9 +66,9 @@ const Navbar = () => {
 
             {user ? (
               <div className="flex items-center space-x-4">
-                <Link to="/my-orders" className="flex items-center space-x-2 hover:text-[#D4A017] transition-colors">
+                <Link to="/profile" className="flex items-center space-x-2 hover:text-[#D4A017] transition-colors">
                   <User className="w-5 h-5" />
-                  <span>{user.first_name || user.username}</span>
+                  <span>{user.full_name || user.first_name || user.username}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -128,6 +128,13 @@ const Navbar = () => {
               </Link>
               {user ? (
                 <>
+                  <Link
+                    to="/profile"
+                    className="text-gray-300 hover:text-[#D4A017] py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
                   <Link
                     to="/my-orders"
                     className="text-gray-300 hover:text-[#D4A017] py-2"

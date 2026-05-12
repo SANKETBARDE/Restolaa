@@ -259,7 +259,15 @@ def resend_verification():
 def get_profiles():
     try:
         supabase = get_supabase_client()
-        response = supabase.table('profiles').select('*').order('created_at', desc=True).execute()
+        email = request.args.get('email')
+        
+        if email:
+            # Filter by email
+            response = supabase.table('profiles').select('*').eq('email', email).execute()
+        else:
+            # Get all profiles
+            response = supabase.table('profiles').select('*').order('created_at', desc=True).execute()
+        
         data = response.data or []
         return jsonify({"results": data, "count": len(data)})
     except Exception as e:
@@ -340,7 +348,42 @@ def update_profile(profile_id):
     try:
         supabase = get_supabase_client()
         data = request.json
-        response = supabase.table('profiles').update(data).eq('id', profile_id).execute()
+        
+        # Check if profiles table has first_name and last_name columns
+        try:
+            # Test with a simple select to see what columns exist
+            test_response = supabase.table('profiles').select('first_name').limit(1).execute()
+            has_first_name = len(test_response.data or []) > 0
+        except:
+            has_first_name = False
+            
+        try:
+            test_response = supabase.table('profiles').select('last_name').limit(1).execute()
+            has_last_name = len(test_response.data or []) > 0
+        except:
+            has_last_name = False
+        
+        # Handle missing columns gracefully
+        update_data = {}
+        
+        if has_first_name:
+            if 'first_name' in data:
+                update_data['first_name'] = data['first_name']
+        if has_last_name:
+            if 'last_name' in data:
+                update_data['last_name'] = data['last_name']
+        
+        # Always include these fields
+        if 'full_name' in data:
+            update_data['full_name'] = data['full_name']
+        if 'email' in data:
+            update_data['email'] = data['email']
+        if 'phone' in data:
+            update_data['phone'] = data['phone']
+        if 'address' in data:
+            update_data['address'] = data['address']
+        
+        response = supabase.table('profiles').update(update_data).eq('id', profile_id).execute()
         data = response.data or []
         if data:
             return jsonify(data[0])
