@@ -25,11 +25,27 @@ SUPABASE_KEY=your-service-role-key
 
 ## Running the Backend
 
+### Development
 ```bash
 python app.py
 ```
 
 The server will start on `http://127.0.0.1:5000`
+
+### Production (Gunicorn)
+
+#### Local Production
+```bash
+gunicorn -c gunicorn_config.py app:app
+```
+
+#### Render Deployment
+For deployment on Render, create a `render.yaml` file or use the following start command:
+```
+gunicorn -c gunicorn_config.py app:app
+```
+
+The server will start on port 8000 (configurable in `gunicorn_config.py`).
 
 ## API Endpoints
 
